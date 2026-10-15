@@ -51,11 +51,13 @@ async def root() -> dict[str, str]:
     return {"name": "Climate Hazard Trend Analyzer API", "status": "ok"}
 
 
+@app.get("/health")
 @app.get("/api/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/regions/search", response_model=list[RegionSearchResult], dependencies=[Depends(rate_limit)])
 @app.get("/api/regions/search", response_model=list[RegionSearchResult], dependencies=[Depends(rate_limit)])
 async def search_regions(q: str, cache: CacheRepository = Depends(get_cache)) -> list[RegionSearchResult]:
     if len(q.strip()) < 2:
@@ -64,6 +66,11 @@ async def search_regions(q: str, cache: CacheRepository = Depends(get_cache)) ->
     return await service.search_regions(q.strip())
 
 
+@app.post(
+    "/analysis/heatwave",
+    response_model=HeatwaveAnalysisResponse,
+    dependencies=[Depends(rate_limit)],
+)
 @app.post(
     "/api/analysis/heatwave",
     response_model=HeatwaveAnalysisResponse,
@@ -92,6 +99,7 @@ async def analyze_heatwave(
     return analysis
 
 
+@app.get("/analysis/{analysis_id}", response_model=HeatwaveAnalysisResponse)
 @app.get("/api/analysis/{analysis_id}", response_model=HeatwaveAnalysisResponse)
 async def get_analysis(analysis_id: str, cache: CacheRepository = Depends(get_cache)) -> HeatwaveAnalysisResponse:
     cached_analysis = await cache.get("analysis", analysis_id)
@@ -100,6 +108,7 @@ async def get_analysis(analysis_id: str, cache: CacheRepository = Depends(get_ca
     return HeatwaveAnalysisResponse(**cached_analysis["payload"])
 
 
+@app.get("/analysis/{analysis_id}/export.csv")
 @app.get("/api/analysis/{analysis_id}/export.csv")
 async def export_analysis_csv(analysis_id: str, cache: CacheRepository = Depends(get_cache)) -> StreamingResponse:
     cached_analysis = await cache.get("analysis", analysis_id)
