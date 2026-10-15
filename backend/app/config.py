@@ -8,7 +8,10 @@ class Settings(BaseSettings):
     mongodb_uri: str | None = Field(default=None, alias="MONGODB_URI")
     mongodb_db: str = Field(default="climate_hazard_analyzer", alias="MONGODB_DB")
     frontend_origins: str = Field(default="http://localhost:5173", alias="FRONTEND_ORIGINS")
-    frontend_origin_regex: str | None = Field(default=None, alias="FRONTEND_ORIGIN_REGEX")
+    frontend_origin_regex: str | None = Field(
+        default=r"https://climate-hazard-trend-analyzer-ttdu(-[a-z0-9]+)?\.vercel\.app",
+        alias="FRONTEND_ORIGIN_REGEX",
+    )
     open_meteo_archive_url: str = Field(
         default="https://archive-api.open-meteo.com/v1/archive",
         alias="OPEN_METEO_ARCHIVE_URL",
